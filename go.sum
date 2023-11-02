@@ -1,0 +1,10 @@
+github.com/ProductionPanic/go-cursor v1.0.0 h1:Tnd5UH6pMv8KysuuHIeH9cmwGOKN/M/cw+KIEAgK88w=
+github.com/ProductionPanic/go-cursor v1.0.0/go.mod h1:kW0+rwT43azRsmvGRgAhIrJj0ZY525qOQPDOw4eODkQ=
+github.com/ProductionPanic/go-input v1.1.2 h1:5DTrWYB1V5XZZ1KzvtlDIvHo5u8fXlDFqK7G7r6nf9s=
+github.com/ProductionPanic/go-input v1.1.2/go.mod h1:M28sO24Tc3vLwL9FFyN+8w8GYsqi5wb3HwByY5CZFxE=
+github.com/ProductionPanic/go-pretty v0.0.1 h1:93+tnmAp/c5qMnFjOqHMJENxyEWT/kM0YB1J4slzRtg=
+github.com/ProductionPanic/go-pretty v0.0.1/go.mod h1:Sr6cEMuI96h80OvSnkxo4efDpMND6kcB24gt4nw8vNw=
+github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203 h1:XBBHcIb256gUJtLmY22n99HaZTz+r2Z51xUPi01m3wg=
+github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203/go.mod h1:E1jcSv8FaEny+OP/5k9UxZVw9YFWGj7eI4KR/iOBqCg=
+golang.org/x/sys v0.13.0 h1:Af8nKPmuFypiUBjVoU9V20FiaFXOcuZI21p0ycVYYGE=
+golang.org/x/sys v0.13.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
