@@ -1,6 +1,8 @@
 module plezk
 
-go 1.20
+go 1.21.3
+
+toolchain go1.21.4
 
 require github.com/ProductionPanic/go-input v1.1.2
 

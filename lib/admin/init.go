@@ -10,6 +10,11 @@ import (
 type AdminInfo struct {
 	Email string
 	Name  string
+	Ip    string
+}
+
+func (a *AdminInfo) GetIp() string {
+	return a.Ip
 }
 
 func (a *AdminInfo) GetEmail() string {
@@ -44,8 +49,16 @@ func Info() *AdminInfo {
 		log.Fatal("Could not find name in admin info")
 	}
 
+	ipcommand := "curl -4 ipinfo.io/ip"
+	ipoutput, err := exec.Command("bash", "-c", ipcommand).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	raw["ip"] = strings.TrimSpace(string(ipoutput))
+
 	return &AdminInfo{
 		Email: raw["email"],
 		Name:  raw["pname"],
+		Ip:    raw["ip"],
 	}
 }

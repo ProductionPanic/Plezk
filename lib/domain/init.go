@@ -2,8 +2,10 @@ package domain
 
 import (
 	"fmt"
+	"github.com/ProductionPanic/go-input"
 	"log"
 	"os/exec"
+	"plezk/lib/admin"
 	"strings"
 )
 
@@ -27,13 +29,15 @@ func Delete(domain string) bool {
 }
 
 func Create(domain string) bool {
-	command := fmt.Sprintf("plesk bin domain --create %[1]s -www-root %[1]s", domain)
+	pass := input.GetText("[bold,blue]Enter password for the domain:[]")
+	command := fmt.Sprintf("plesk bin domain --create %[1]s -www-root %[1]s -php true -hosting true -ip %[2]s -login %[1]s -passwd %[3]s", domain, admin.Info().GetIp(), pass)
 	_, err := exec.Command("bash", "-c", command).Output()
 	return err == nil
 }
 
 func CreateSubdomain(subdomain, domain string) bool {
-	command := fmt.Sprintf("plesk bin subdomain --create %[1]s -domain %[2]s -www-root %[1]s.%[2]s", subdomain, domain)
+	pass := input.GetText("[bold,blue]Enter password for the domain:[]")
+	command := fmt.Sprintf("plesk bin subdomain --create %[1]s -domain %[2]s -www-root %[1]s.%[2]s -php true -hositng true -ip %[3]s -login %[1]s -passwd %[4]s", subdomain, domain, admin.Info().GetIp(), pass)
 	_, err := exec.Command("bash", "-c", command).Output()
 	return err == nil
 }
