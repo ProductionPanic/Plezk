@@ -1,25 +1,60 @@
 package domain
 
 import (
+	"encoding/xml"
 	"fmt"
-	"github.com/ProductionPanic/go-input"
 	"log"
 	"os/exec"
 	"plezk/lib/admin"
-	"strings"
+
+	"github.com/ProductionPanic/go-input"
+	"github.com/ProductionPanic/go-pretty"
 )
 
-func List() []string {
-	// fetch domains from plesk
-	bashCommand := "plesk bin domain --list"
-	output, err := exec.Command("bash", "-c", bashCommand).Output()
+type Resultset struct {
+	XMLName xml.Name `xml:"resultset"`
+	Rows    []Row    `xml:"row"`
+}
+
+type Row struct {
+	XMLName xml.Name `xml:"row"`
+	Fields  []Field  `xml:"field"`
+}
+
+type Field struct {
+	XMLName xml.Name `xml:"field"`
+	Name    string   `xml:"name,attr"`
+	Value   string   `xml:",chardata"`
+}
+
+type Domain struct {
+	Id       string
+	Name     string
+	Children []Domain
+}
+
+func get_domains_by_parent(parentId string) []Domain {
+
+	cmd := "plesk db 'select name, id from domains where parentDomainId = %s or parentDomainId is null' --xml"
+	cmd = fmt.Sprintf(cmd, parentId)
+	xmlOutput, err := exec.Command("bash", "-c", cmd).Output()
 	if err != nil {
 		log.Fatal(err)
 	}
-	// split output into lines
-	lines := strings.Split(string(output), "\n")
+	var result Resultset
+	err = xml.Unmarshal([]byte(xmlOutput), &result)
+	if err != nil {
+		log.Fatal(err)
+	}
+	var output []Domain
+	for _, row := range result.Rows {
+		output = append(output, Domain{Id: row.Fields[1].Value, Name: row.Fields[0].Value, Children: get_domains_by_parent(row.Fields[1].Value)})
+	}
+	return output
+}
 
-	return lines
+func List() []Domain {
+	return get_domains_by_parent("0")
 }
 
 func Delete(domain string) bool {
@@ -29,17 +64,47 @@ func Delete(domain string) bool {
 }
 
 func Create(domain string) bool {
-	pass := input.GetText("[bold,blue]Enter password for the domain:[]")
+	pass, er := input.GetPassword("[bold,blue]Enter password for the domain:[]")
+	if er != nil {
+		log.Fatal(er)
+	}
 	command := fmt.Sprintf("plesk bin domain --create %[1]s -www-root %[1]s -php true -hosting true -ip %[2]s -login %[1]s -passwd %[3]s", domain, admin.Info().GetIp(), pass)
 	_, err := exec.Command("bash", "-c", command).Output()
 	return err == nil
 }
 
 func CreateSubdomain(subdomain, domain string) bool {
-	pass := input.GetText("[bold,blue]Enter password for the domain:[]")
+	pass, er := input.GetText("[bold,blue]Enter password for the domain:[]")
+	if er != nil {
+		log.Fatal(er)
+	}
 	command := fmt.Sprintf("plesk bin subdomain --create %[1]s -domain %[2]s -www-root %[1]s.%[2]s -php true -hositng true -ip %[3]s -login %[1]s -passwd %[4]s", subdomain, domain, admin.Info().GetIp(), pass)
 	_, err := exec.Command("bash", "-c", command).Output()
 	return err == nil
+}
+
+func printRecursive(domains []Domain, depth int) {
+	for i, domain := range domains {
+		for i := 0; i < depth; i++ {
+			pretty.Print("  ")
+		}
+		if depth > 0 {
+			is_last := i == len(domains)-1
+			if is_last {
+				pretty.Print("[cyan]└ []")
+			} else {
+				pretty.Print("[cyan]├ []")
+			}
+		}
+		fmt.Println(domain.Name)
+		printRecursive(domain.Children, depth+1)
+	}
+}
+
+func PrintList() {
+	domains := List()
+	pretty.Println("[bold,blue]Domains:[]")
+	printRecursive(domains, 0)
 }
 
 func SetSsl(domain, admin string) bool {
