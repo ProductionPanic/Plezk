@@ -1,4 +1,4 @@
-package main
+package common
 
 import (
 	"fmt"
@@ -9,6 +9,7 @@ import (
 type BubbleTeaMainMenu struct {
 	menuItems []string
 	cursor    int
+	title     string
 }
 
 func (m *BubbleTeaMainMenu) Init() tea.Cmd {
@@ -19,15 +20,17 @@ func (m *BubbleTeaMainMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "up":
+		case "up", "k":
 			if m.cursor > 0 {
 				m.cursor--
 			}
-		case "down":
+		case "down", "j":
 			if m.cursor < len(m.menuItems)-1 {
 				m.cursor++
 			}
-		case "enter":
+		case "enter", " ":
+			return m, tea.Quit
+		case "q":
 			return m, tea.Quit
 		}
 	}
@@ -36,7 +39,7 @@ func (m *BubbleTeaMainMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *BubbleTeaMainMenu) View() string {
-	s := "  [blue,bold]Plezk:[]\n"
+	s := "  [blue,bold]" + m.title + ":[]\n"
 	for i, item := range m.menuItems {
 		cursor := " "
 		if m.cursor == i {
@@ -48,7 +51,7 @@ func (m *BubbleTeaMainMenu) View() string {
 	return pretty.Parse(s)
 }
 
-func RenderBubbleTeaMainMenu(menuItems [][]string) string {
+func RenderBubbleTeaMenu(menuItems [][]string, title string) string {
 	menuItemKeys := make([]string, len(menuItems))
 	menuItemValues := make([]string, len(menuItems))
 	for i, item := range menuItems {
@@ -58,6 +61,7 @@ func RenderBubbleTeaMainMenu(menuItems [][]string) string {
 	p := tea.NewProgram(&BubbleTeaMainMenu{
 		menuItems: menuItemKeys,
 		cursor:    0,
+		title:     title,
 	})
 	m, e := p.Run()
 	if e != nil {

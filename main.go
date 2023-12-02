@@ -9,11 +9,11 @@ import (
 
 func main() {
 	common.Cls()
-	selected := RenderBubbleTeaMainMenu([][]string{
+	selected := common.RenderBubbleTeaMenu([][]string{
 		{"Websites & domains", "websites"},
 		{"Tools & settings", "tools"},
 		{"Exit", "exit"},
-	})
+	}, "Plezk")
 	common.Cls()
 
 	if selected == "exit" {

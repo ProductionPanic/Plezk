@@ -1,67 +1,65 @@
 package websites
 
 import (
-	"fmt"
-	"github.com/ProductionPanic/go-pretty"
-	tea "github.com/charmbracelet/bubbletea"
+	"plezk/lib/common"
 	"plezk/lib/domain"
+	"plezk/modules/website"
+
+	"github.com/ProductionPanic/go-pretty"
 )
 
-type BubbleTeaWebsiteModule struct {
-	domainsWithChildDomains []domain.Domain
-	cursor                  int
-	selectedDomain          *domain.Domain
-}
-
-func (m *BubbleTeaWebsiteModule) Init() tea.Cmd {
-	return nil
-}
-
-func (m *BubbleTeaWebsiteModule) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	case tea.KeyMsg:
-		switch msg.String() {
-		case "up":
-			if m.cursor > 0 {
-				m.cursor--
-			}
-		case "down":
-			if m.cursor < len(m.domainsWithChildDomains)-1 {
-				m.cursor++
-			}
-		case "enter":
-			return m, tea.Quit
-		}
-	}
-
-	return m, nil
-}
-
-func (m *BubbleTeaWebsiteModule) View() string {
-	s := "  [blue,bold]Plezk:[]\n"
-	for i, item := range m.domainsWithChildDomains {
-		cursor := " "
-		if m.cursor == i {
-			cursor = "[cyan]>[]"
-		}
-		s += fmt.Sprintf("%s %s\n", cursor, item)
-	}
-
-	return pretty.Parse(s)
-}
-
-func RenderBubbleTeaWebsiteModule(domainsWithChildDomains []domain.Domain) string {
-	p := tea.NewProgram(&BubbleTeaWebsiteModule{
-		domainsWithChildDomains: domainsWithChildDomains,
-		cursor:                  0,
-		selectedDomain:          nil,
-	})
-	m, _ := p.Run()
-	return domainsWithChildDomains[m.(*BubbleTeaWebsiteModule).cursor].Name
-}
+const (
+	MENU_T_SPLIT = "├"
+	MENU_T_END   = "└"
+)
 
 func Start() {
 	domains := domain.List()
-	RenderBubbleTeaWebsiteModule(domains)
-
+	domains_menu := generate_domains_menu(domains, 0)
+	menu := [][]string{
+		{"Add domain", "add"},
+		{"Add subdomain", "add_subdomain"},
+		{"Add domain alias\n", "add_domain_alias"},
+	}
+	for _, domain := range domains_menu {
+		menu = append(menu, domain)
+	}
+	selected := common.RenderBubbleTeaMenu(menu, "Websites & domains")
+	if selected == "add" {
+		add_domain()
+	} else {
+		website.Start(domain.Get(selected))
+	}
 }
+
+func generate_domains_menu(domains []domain.Domain, depth int) [][]string {
+	menu := make([][]string, 0)
+	for i, domain := range domains {
+		is_last := i == len(domains)-1
+		prefix := ""
+		if depth > 0 {
+			for i := 0; i < depth; i++ {
+				prefix += " "
+			}
+			prefix += "[cyan,bold]"
+			if is_last {
+				prefix += MENU_T_END + " [reset]"
+			} else {
+				prefix += MENU_T_SPLIT + " [reset]"
+			}
+		}
+		menu = append(menu, []string{prefix + "[magenta,bold]" + domain.Name + "[]", domain.Name})
+		if len(domain.Children) > 0 {
+			subdomains_menu := generate_domains_menu(domain.Children, depth+1)
+			for _, subdomain := range subdomains_menu {
+				menu = append(menu, []string{subdomain[0], subdomain[1]})
+			}
+		}
+	}
+	return menu
+}
+
+func add_domain() {
+	pretty.Println("Add domain")
+}
+

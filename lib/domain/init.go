@@ -57,6 +57,18 @@ func List() []Domain {
 	return get_domains_by_parent("0")
 }
 
+func ListFlat() []Domain {
+	domains := List()
+	var output []Domain
+	for _, domain := range domains {
+		output = append(output, domain)
+		for _, childDomain := range domain.Children {
+			output = append(output, childDomain)
+		}
+	}
+	return output
+}
+
 func Delete(domain string) bool {
 	command := fmt.Sprintf("plesk bin domain --remove %s", domain)
 	_, err := exec.Command("bash", "-c", command).Output()
@@ -115,4 +127,14 @@ func SetSsl(domain, admin string) bool {
 		return false
 	}
 	return true
+}
+
+func Get(do string) Domain {
+	domains := ListFlat()
+	for _, domain := range domains {
+		if domain.Name == do {
+			return domain
+		}
+	}
+	return Domain{}
 }

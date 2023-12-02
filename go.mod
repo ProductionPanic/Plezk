@@ -1,12 +1,14 @@
 module plezk
 
-go 1.21.3
+go 1.23
 
 require (
 	github.com/ProductionPanic/go-cursor v1.0.0
 	github.com/ProductionPanic/go-input v1.1.3-0.20231130143845-743a68c5004b
 	github.com/ProductionPanic/go-pretty v1.0.0
+	github.com/charmbracelet/bubbles v0.16.1
 	github.com/charmbracelet/bubbletea v0.24.2
+	github.com/charmbracelet/lipgloss v0.9.1
 )
 
 require (
