@@ -5,7 +5,7 @@ import (
 	"plezk/lib/domain"
 )
 
-func Start(dom domain.Domain) {
+func Start(dom domain.Domain) int {
 	// Load some text for our viewport
 
 	common.Cls()
@@ -14,17 +14,21 @@ func Start(dom domain.Domain) {
 		{"View domain", "view"},
 		{"Edit domain", "edit"},
 		{"Delete domain", "delete"},
-		{"Back to main menu", "back"},
+		{"Back", "back"},
 	}, dom.Name)
-
+	rc := -1
 	switch r {
 	case "view":
-		View(dom)
+		rc = View(dom)
 	case "edit":
-		Edit(dom)
+		rc = Edit(dom)
 	case "delete":
-		Delete(dom)
+		rc = Delete(dom)
 	case "back":
-		return
+		return 0
 	}
+	if rc == 0 {
+		return Start(dom)
+	}
+	return -1
 }

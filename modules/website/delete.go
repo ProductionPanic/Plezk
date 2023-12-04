@@ -6,7 +6,7 @@ import (
 	"plezk/lib/domain"
 )
 
-func Delete(dom domain.Domain) {
+func Delete(dom domain.Domain) int {
 	for {
 		common.Cls()
 		answer, err := input.GetText("Are you sure you want to delete this domain? (y/n)")
@@ -15,10 +15,11 @@ func Delete(dom domain.Domain) {
 		}
 		if answer == "y" {
 			dom.Delete()
-			break
+			return -1
 		}
 		if answer == "n" {
 			break
 		}
 	}
+	return 0
 }

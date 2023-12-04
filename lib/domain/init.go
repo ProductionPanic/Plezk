@@ -125,6 +125,36 @@ func SetSsl(domain, admin string) bool {
 	return true
 }
 
+func RemoveSsl(domain string) bool {
+	// fetch domains from plesk
+	bashCommand := fmt.Sprintf("plesk bin extension --exec letsencrypt cli.php --remove -d %s", domain)
+	_, err := exec.Command("bash", "-c", bashCommand).Output()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func SetSsh(domain string) bool {
+	// fetch domains from plesk
+	bashCommand := fmt.Sprintf("plesk bin subscription --update-web-server-settings %s -ssh true", domain)
+	_, err := exec.Command("bash", "-c", bashCommand).Output()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
+func RemoveSsh(domain string) bool {
+	// fetch domains from plesk
+	bashCommand := fmt.Sprintf("plesk bin subscription --update-web-server-settings %s -ssh false", domain)
+	_, err := exec.Command("bash", "-c", bashCommand).Output()
+	if err != nil {
+		return false
+	}
+	return true
+}
+
 func FetchDomainInfo(domain *Domain) map[string]interface{} {
 	cmd := "plesk bin domain --info %s"
 	reg := "^\\s*([^:]+):\\s*(.*)$"

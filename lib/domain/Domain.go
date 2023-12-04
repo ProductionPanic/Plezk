@@ -3,6 +3,7 @@ package domain
 import (
 	"fmt"
 	"github.com/ProductionPanic/go-pretty"
+	"plezk/lib/admin"
 	"strconv"
 )
 
@@ -111,6 +112,19 @@ func (d *DomainInfo) GetInfoString() string {
 	`)
 }
 
+func (d *DomainInfo) HasSshAccess() bool {
+	sa := d.SshAccess
+	if len(sa) == 0 {
+		return false
+	}
+	first_char := sa[0]
+	if first_char == '/' {
+		return true
+	}
+
+	return false
+}
+
 func (d *Domain) Info() *DomainInfo {
 	key_values := FetchDomainInfo(d)
 	info := DomainInfo{
@@ -123,4 +137,20 @@ func (d *Domain) Info() *DomainInfo {
 func (d *Domain) Delete() {
 	Delete(d.Name)
 	pretty.Println("[bold,green]Domain deleted[]")
+}
+
+func (d *Domain) SSLEnable() {
+	SetSsl(d.Name, admin.Info().GetEmail())
+}
+
+func (d *Domain) SSLDisable() {
+	RemoveSsl(d.Name)
+}
+
+func (d *Domain) SshEnable() {
+	SetSsh(d.Name)
+}
+
+func (d *Domain) SshDisable() {
+	RemoveSsh(d.Name)
 }

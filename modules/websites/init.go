@@ -22,17 +22,20 @@ func Start() {
 		{"Add subdomain", "add_subdomain"},
 		{"Add domain alias", "add_domain_alias"},
 	}
-	for _, domain := range domains_menu {
-		menu = append(menu, domain)
+	for _, d := range domains_menu {
+		menu = append(menu, d)
 	}
-	for _, domain := range end {
-		menu = append(menu, domain)
+	for _, d := range end {
+		menu = append(menu, d)
 	}
 	selected := common.RenderBubbleTeaMenu(menu, "Websites & domains")
 	if selected == "add" {
 		add_domain()
 	} else {
-		website.Start(domain.Get(selected))
+		r := website.Start(domain.Get(selected))
+		if r == 0 {
+			Start()
+		}
 	}
 }
 
