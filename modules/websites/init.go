@@ -16,12 +16,16 @@ const (
 func Start() {
 	domains := domain.List()
 	domains_menu := generate_domains_menu(domains, 0)
-	menu := [][]string{
+	menu := [][]string{}
+	end := [][]string{
 		{"Add domain", "add"},
 		{"Add subdomain", "add_subdomain"},
-		{"Add domain alias\n", "add_domain_alias"},
+		{"Add domain alias", "add_domain_alias"},
 	}
 	for _, domain := range domains_menu {
+		menu = append(menu, domain)
+	}
+	for _, domain := range end {
 		menu = append(menu, domain)
 	}
 	selected := common.RenderBubbleTeaMenu(menu, "Websites & domains")
@@ -62,4 +66,3 @@ func generate_domains_menu(domains []domain.Domain, depth int) [][]string {
 func add_domain() {
 	pretty.Println("Add domain")
 }
-

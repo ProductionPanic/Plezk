@@ -6,6 +6,8 @@ import (
 	"log"
 	"os/exec"
 	"plezk/lib/admin"
+	"regexp"
+	"strings"
 
 	"github.com/ProductionPanic/go-input"
 	"github.com/ProductionPanic/go-pretty"
@@ -25,12 +27,6 @@ type Field struct {
 	XMLName xml.Name `xml:"field"`
 	Name    string   `xml:"name,attr"`
 	Value   string   `xml:",chardata"`
-}
-
-type Domain struct {
-	Id       string
-	Name     string
-	Children []Domain
 }
 
 func get_domains_by_parent(parentId string) []Domain {
@@ -127,6 +123,25 @@ func SetSsl(domain, admin string) bool {
 		return false
 	}
 	return true
+}
+
+func FetchDomainInfo(domain *Domain) map[string]interface{} {
+	cmd := "plesk bin domain --info %s"
+	reg := "^\\s*([^:]+):\\s*(.*)$"
+	cmd = fmt.Sprintf(cmd, domain.Name)
+	strOutput, err := exec.Command("bash", "-c", cmd).Output()
+	if err != nil {
+		log.Fatal(err)
+	}
+	var result map[string]interface{}
+	result = make(map[string]interface{})
+	for _, line := range strings.Split(string(strOutput), "\n") {
+		if strings.Contains(line, ":") {
+			matches := regexp.MustCompile(reg).FindStringSubmatch(line)
+			result[matches[1]] = matches[2]
+		}
+	}
+	return result
 }
 
 func Get(do string) Domain {

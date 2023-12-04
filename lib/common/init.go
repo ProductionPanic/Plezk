@@ -1,6 +1,8 @@
 package common
 
-import "github.com/ProductionPanic/go-cursor"
+import (
+	"github.com/ProductionPanic/go-cursor"
+)
 
 func Cls() {
 	cursor.ClearScreen()

@@ -8,6 +8,10 @@ import (
 )
 
 func main() {
+	RenderMainMenu()
+}
+
+func RenderMainMenu() {
 	common.Cls()
 	selected := common.RenderBubbleTeaMenu([][]string{
 		{"Websites & domains", "websites"},
