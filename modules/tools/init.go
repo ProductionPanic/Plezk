@@ -1,5 +1,5 @@
 package tools
 
-func Start() {
-
+func Start() int {
+	return -1
 }

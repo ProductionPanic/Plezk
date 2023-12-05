@@ -71,12 +71,8 @@ func Delete(domain string) bool {
 	return err == nil
 }
 
-func Create(domain string) bool {
-	pass, er := input.GetPassword("[bold,blue]Enter password for the domain:[]")
-	if er != nil {
-		log.Fatal(er)
-	}
-	command := fmt.Sprintf("plesk bin domain --create %[1]s -www-root %[1]s -php true -hosting true -ip %[2]s -login %[1]s -passwd %[3]s", domain, admin.Info().GetIp(), pass)
+func Create(domain string, user string, pass string) bool {
+	command := fmt.Sprintf("plesk bin domain --create %s -www-root httpdocs -php true -hosting true -ip %s -login %s -passwd %s", domain, admin.Info().GetIp(), user, pass)
 	_, err := exec.Command("bash", "-c", command).Output()
 	return err == nil
 }

@@ -102,13 +102,12 @@ func (d *DomainInfo) GetInfoString() string {
 [bold,cyan]ip:[] ` + d.Ip + `
 [bold,cyan]description:[] ` + d.Description + `
 [bold,cyan]www root:[] ` + d.WwwRoot + `
-[bold,cyan]php:[] ` + strconv.FormatBool(d.Php) + `
-[bold,cyan]ftp login:[] ` + d.FtpLogin + `
-[bold,cyan]ftp password:[] ` + d.FtpPassword + `
-[bold,cyan]total size:[] ` + d.TotalSize + `
-[bold,cyan]status:[] ` + d.Status + `
-[bold,cyan]mail service:[] ` + strconv.FormatBool(d.MailService) + `
-[bold,cyan]access to plesk:[] ` + strconv.FormatBool(d.AccessToPlesk) + `
+[bold,cyan]Php:[] ` + strconv.FormatBool(d.Php) + `
+[bold,cyan]Ftp login:[] ` + d.FtpLogin + `
+[bold,cyan]Total size:[] ` + d.TotalSize + `
+[bold,cyan]Status:[] ` + d.Status + `
+[bold,cyan]Mail service:[] ` + strconv.FormatBool(d.MailService) + `
+[bold,cyan]Access to plesk:[] ` + strconv.FormatBool(d.AccessToPlesk) + `
 	`)
 }
 

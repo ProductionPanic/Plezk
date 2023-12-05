@@ -11,7 +11,7 @@ func main() {
 	RenderMainMenu()
 }
 
-func RenderMainMenu() {
+func RenderMainMenu() int {
 	common.Cls()
 	selected := common.RenderBubbleTeaMenu([][]string{
 		{"Websites & domains", "websites"},
@@ -21,10 +21,20 @@ func RenderMainMenu() {
 	common.Cls()
 
 	if selected == "exit" {
+		common.Cls()
 		fmt.Println("Bye!")
+		return -1
 	} else if selected == "websites" {
-		websites.Start()
+		r := websites.Start()
+		if r == 0 {
+			common.Cls()
+			return RenderMainMenu()
+		}
+		return -1
 	} else if selected == "tools" {
-		tools.Start()
+		common.Cls()
+		return tools.Start()
 	}
+	common.Cls()
+	return -1
 }

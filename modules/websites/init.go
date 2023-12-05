@@ -4,8 +4,6 @@ import (
 	"plezk/lib/common"
 	"plezk/lib/domain"
 	"plezk/modules/website"
-
-	"github.com/ProductionPanic/go-pretty"
 )
 
 const (
@@ -13,7 +11,7 @@ const (
 	MENU_T_END   = "└"
 )
 
-func Start() {
+func Start() int {
 	domains := domain.List()
 	domains_menu := generate_domains_menu(domains, 0)
 	menu := [][]string{}
@@ -21,6 +19,7 @@ func Start() {
 		{"Add domain", "add"},
 		{"Add subdomain", "add_subdomain"},
 		{"Add domain alias", "add_domain_alias"},
+		{"Back", "back"},
 	}
 	for _, d := range domains_menu {
 		menu = append(menu, d)
@@ -28,15 +27,21 @@ func Start() {
 	for _, d := range end {
 		menu = append(menu, d)
 	}
+	common.Cls()
 	selected := common.RenderBubbleTeaMenu(menu, "Websites & domains")
 	if selected == "add" {
-		add_domain()
+		common.Cls()
+		website.Add()
+	} else if selected == "back" {
+		return 0
 	} else {
+		common.Cls()
 		r := website.Start(domain.Get(selected))
 		if r == 0 {
 			Start()
 		}
 	}
+	return -1
 }
 
 func generate_domains_menu(domains []domain.Domain, depth int) [][]string {
@@ -64,8 +69,4 @@ func generate_domains_menu(domains []domain.Domain, depth int) [][]string {
 		}
 	}
 	return menu
-}
-
-func add_domain() {
-	pretty.Println("Add domain")
 }
