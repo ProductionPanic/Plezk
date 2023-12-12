@@ -21,6 +21,10 @@ func (m DomainsAndWebsitesModel) Init() tea.Cmd {
 }
 
 func (m *DomainsAndWebsitesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	if len(m.domains) == 0 {
+		m.domains = domain.List()
+	}
+
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
