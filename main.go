@@ -10,10 +10,11 @@ import (
 import lg "github.com/charmbracelet/lipgloss"
 
 type PleskModel struct {
-	Menu        PleskMenu
-	MenuFocused bool
-	width       int
-	height      int
+	Menu          PleskMenu
+	MenuFocused   bool
+	width         int
+	height        int
+	selectedModel tea.Model
 }
 
 type PleskMenu struct {
@@ -68,11 +69,8 @@ func (m *PleskModel) UpdateModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	}
-	var model *tea.Model = &m.Menu.Items[m.Menu.SelectedIndex].model
-	var cmd tea.Cmd = nil
-	if model != nil {
-		*model, cmd = (*model).Update(msg)
-	}
+	var cmd tea.Cmd
+	m.selectedModel, cmd = m.selectedModel.Update(msg)
 	return m, cmd
 }
 
@@ -93,6 +91,7 @@ func (m *PleskModel) UpdateMenu(msg tea.Msg) (tea.Model, tea.Cmd) {
 			switch m.Menu.Items[m.Menu.CursorIndex].PleskMenuItemType {
 			case MenuItemTypes.ModelType:
 				m.Menu.SelectedIndex = m.Menu.CursorIndex
+				m.selectedModel = m.Menu.Items[m.Menu.CursorIndex].model
 				return m, nil
 			case MenuItemTypes.FunctionType:
 				m.Menu.Items[m.Menu.CursorIndex].function()
@@ -154,11 +153,9 @@ func (m *PleskModel) ViewContent() string {
 		BorderBackground(colors.Black).BorderForeground(colors.Primary).
 		BorderRight(false).BorderTop(false).BorderBottom(false).
 		Padding(1)
-
-	current_item := m.Menu.Items[m.Menu.SelectedIndex]
 	pre := lg.NewStyle().Height(1).Width(m.width/6*5).Background(colors.Primary).Render("") + "\n"
-	if current_item.PleskMenuItemType == MenuItemTypes.ModelType {
-		return pre + ContentStyle.Render(current_item.model.View())
+	if m.Menu.SelectedIndex > 0 {
+		pre += m.selectedModel.View()
 	}
 	return pre + ContentStyle.Render("")
 }
