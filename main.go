@@ -68,8 +68,11 @@ func (m *PleskModel) UpdateModel(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, nil
 		}
 	}
-	var cmd tea.Cmd
-	m.Menu.Items[m.Menu.SelectedIndex].model, cmd = m.Menu.Items[m.Menu.SelectedIndex].model.Update(msg)
+	var model *tea.Model = &m.Menu.Items[m.Menu.SelectedIndex].model
+	var cmd tea.Cmd = nil
+	if model != nil {
+		*model, cmd = (*model).Update(msg)
+	}
 	return m, cmd
 }
 
