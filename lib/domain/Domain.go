@@ -13,6 +13,10 @@ type Domain struct {
 	Children []Domain
 }
 
+func (d *Domain) Count() int {
+	return len(d.Children) + 1
+}
+
 type DomainInfo struct {
 	DomainName    string
 	SSL           bool
