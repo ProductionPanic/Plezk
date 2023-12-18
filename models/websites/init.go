@@ -153,8 +153,9 @@ func (m DomainsAndWebsitesModel) View() string {
 	headr := lg.NewStyle().
 		Bold(true).
 		Foreground(colors.Secondary).
-		BorderForeground(colors.Black).
-		Width(m.Width).
-		Render("Websites and domains")
+		Background(colors.Black).
+		PaddingLeft(1).
+		Width(m.Width).Height(2).Render("Websites and domains")
+
 	return rootStyle.Render(lg.JoinVertical(lg.Left, headr, dom))
 }
