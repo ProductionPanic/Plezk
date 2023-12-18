@@ -4,15 +4,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 	"plezk/lib/colors"
+	"plezk/lib/common"
 	"plezk/lib/domain"
-	"plezk/models/websites/website"
 )
-
-type BackMsg struct{}
-
-var Back = tea.Cmd(func() tea.Msg {
-	return BackMsg{}
-})
 
 type DomainsAndWebsitesModel struct {
 	Width          int
@@ -81,9 +75,6 @@ func (m *DomainsAndWebsitesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch msg := msg.(type) {
-	case website.BackMsg:
-		m.focused = true
-		m.DomainModel = nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "j", "down":
@@ -98,12 +89,12 @@ func (m *DomainsAndWebsitesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			} else {
 				m.cursor = m.TotalLength() - 1
 			}
-		case "enter", "right":
+		case "enter", "right", "l":
 			m.SelectedDomain = m.cursor
 			m.focused = false
 			return m, DomainSelect(*m.GetSelectedDomain())
-		case "esc", "left":
-			return m, Back
+		case "esc", "left", "h":
+			return m, common.BackToMenu
 		}
 
 	}
@@ -117,8 +108,8 @@ func (m DomainsAndWebsitesModel) View() string {
 	}
 	rootStyle := lg.NewStyle().Background(lg.Color("#000000"))
 	domainStyle := lg.NewStyle().Background(colors.Black).
-		Border(lg.DoubleBorder()).BorderRight(false).BorderTop(false).BorderBottom(false).BorderLeft(true).
-		BorderForeground(colors.Black).BorderBackground(colors.Black).Width(m.Width - 2)
+		Border(lg.DoubleBorder(), false, false, false, true).Foreground(colors.White).
+		BorderForeground(colors.Black).BorderBackground(colors.Black).Width(m.Width - 1)
 
 	var domains []string
 	totali := 0
@@ -134,7 +125,7 @@ func (m DomainsAndWebsitesModel) View() string {
 		domains = append(domains, domstyle.Render(dom.Name))
 		for _, child := range dom.Children {
 			if totali == m.cursor {
-				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).MarginLeft(1).Render(" > "+child.Name))
+				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).MarginLeft(1).Render(" - "+child.Name))
 				totali++
 				continue
 			}
@@ -147,11 +138,10 @@ func (m DomainsAndWebsitesModel) View() string {
 		lg.Left,
 		domains...,
 	)
-	dom = lg.NewStyle().Render(dom)
+	dom = lg.NewStyle().Background(colors.Black).Render(dom)
 	headr := lg.NewStyle().
 		Bold(true).
 		Foreground(colors.Secondary).
-		Background(colors.Black).
 		Render("Websites and domains")
 	return rootStyle.Render(lg.JoinVertical(lg.Left, headr, dom))
 }

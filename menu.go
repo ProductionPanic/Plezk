@@ -4,6 +4,7 @@ import (
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
+	"plezk/lib/common"
 )
 
 type Menu struct {
@@ -56,16 +57,6 @@ func (m *Menu) Down() {
 	}
 }
 
-func OnSelect(model string) tea.Cmd {
-	return func() tea.Msg {
-		return MenuSelectMsg{model}
-	}
-}
-
-type MenuSelectMsg struct {
-	model string
-}
-
 func (m *Menu) Unselect() {
 	m.Selected = -1
 	m.Focused = true
@@ -75,14 +66,12 @@ func (m *Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "up":
+		case "up", "k":
 			m.Up()
-		case "down":
+		case "down", "j":
 			m.Down()
-		case "enter":
-			return m, OnSelect(m.Items[m.Cursor].model)
-		case "esc":
-			m.Unselect()
+		case "enter", "right", "l":
+			return m, common.SelectModel(m.Items[m.Cursor].model)
 		}
 	}
 	return m, nil

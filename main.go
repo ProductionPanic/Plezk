@@ -5,6 +5,7 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 	"golang.org/x/term"
+	"plezk/lib/common"
 	"plezk/models/websitedetails"
 	"plezk/models/websites"
 )
@@ -44,9 +45,16 @@ func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		}
 	case websites.DomainSelectMsg:
 		m.Menu.Focused = false
+		m.Models["website"].(*websitedetails.WebsiteDetailsModel).Domain = &msg.Domain
 		m.SelectedModel = "website"
-	case MenuSelectMsg:
-		m.SelectedModel = msg.model
+		mod, _ := m.GetModel()
+		mod.Init()
+		return m, nil
+	case common.MenuSelectMsg:
+		m.SelectedModel = msg.Model
+	case common.BackToMenuMsg:
+		m.Menu.Focused = true
+		m.SelectedModel = ""
 	}
 
 	if !m.Menu.Focused && !m.HasModel() {
@@ -87,11 +95,10 @@ func (m *PlezkModel) View() string {
 		content_str = content_str_model.View()
 	}
 	content := lg.NewStyle().
-		Width(w-w/6).
+		Width(w - w/6).
 		Height(h).
 		Background(lg.Color("#000000")).
 		Foreground(lg.Color("#000000")).
-		Padding(1, 2).
 		Border(lg.OuterHalfBlockBorder()).
 		BorderForeground(lg.Color("#9933ff")).
 		BorderBackground(lg.Color("#000000")).Render(content_str)
@@ -119,10 +126,13 @@ func main() {
 		},
 		Models: map[string]tea.Model{
 			"websites": &websites.DomainsAndWebsitesModel{
-				Width:  w,
+				Width:  w - w/6 - 4,
 				Height: h,
 			},
-			"website": &websitedetails.WebsiteDetailsModel{},
+			"website": &websitedetails.WebsiteDetailsModel{
+				Width:  w - w/6,
+				Height: h - 2,
+			},
 		},
 	}, tea.WithAltScreen())
 	if err := p.Start(); err != nil {

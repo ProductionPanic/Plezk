@@ -18,10 +18,18 @@ func Pause() {
 	}
 }
 
-type BackMsg struct{}
+type BackToMenuMsg struct{}
 
-func Back() tea.Cmd {
+var BackToMenu = tea.Cmd(func() tea.Msg {
+	return BackToMenuMsg{}
+})
+
+func SelectModel(model string) tea.Cmd {
 	return func() tea.Msg {
-		return BackMsg{}
+		return MenuSelectMsg{model}
 	}
+}
+
+type MenuSelectMsg struct {
+	Model string
 }
