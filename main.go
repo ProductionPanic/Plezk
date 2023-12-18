@@ -45,24 +45,27 @@ func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case websites.DomainSelectMsg:
 		m.Menu.Focused = false
 		m.SelectedModel = "website"
+	case MenuSelectMsg:
+		m.SelectedModel = msg.model
 	}
 
 	if !m.Menu.Focused && !m.HasModel() {
 		m.Menu.Focused = true
-		return m, nil
 	}
+	var cmds []tea.Cmd
 
 	if m.Menu.Focused {
 		menum, cmd := m.Menu.Update(msg)
 		m.Menu = menum.(*Menu)
-		return m, cmd
-	} else if m.HasModel() {
+		cmds = append(cmds, cmd)
+	}
+	if m.HasModel() {
 		var cmd tea.Cmd
 		m.Models[m.SelectedModel], cmd = m.Models[m.SelectedModel].Update(msg)
-		return m, cmd
+		cmds = append(cmds, cmd)
 	}
 
-	return m, nil
+	return m, tea.Batch(cmds...)
 }
 
 func (m *PlezkModel) View() string {

@@ -58,11 +58,11 @@ func (m *Menu) Down() {
 
 func OnSelect(model string) tea.Cmd {
 	return func() tea.Msg {
-		return DomainSelectMsg{model}
+		return MenuSelectMsg{model}
 	}
 }
 
-type DomainSelectMsg struct {
+type MenuSelectMsg struct {
 	model string
 }
 
