@@ -56,9 +56,14 @@ func (m *Menu) Down() {
 	}
 }
 
-func (m *Menu) Select() {
-	m.Selected = m.Cursor
-	m.Focused = false
+func OnSelect(model string) tea.Cmd {
+	return func() tea.Msg {
+		return DomainSelectMsg{model}
+	}
+}
+
+type DomainSelectMsg struct {
+	model string
 }
 
 func (m *Menu) Unselect() {
@@ -75,7 +80,7 @@ func (m *Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "down":
 			m.Down()
 		case "enter":
-			m.Select()
+			return m, OnSelect(m.Items[m.Cursor].model)
 		case "esc":
 			m.Unselect()
 		}

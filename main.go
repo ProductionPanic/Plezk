@@ -5,12 +5,14 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 	"golang.org/x/term"
+	"plezk/models/websitedetails"
 	"plezk/models/websites"
 )
 
 type PlezkModel struct {
-	Menu   *Menu
-	Models map[string]tea.Model
+	Menu          *Menu
+	Models        map[string]tea.Model
+	SelectedModel string
 }
 
 func (m *PlezkModel) Init() tea.Cmd {
@@ -21,31 +23,15 @@ func (m *PlezkModel) TotalLength() int {
 	return len(m.Menu.Items)
 }
 
-func (m *PlezkModel) GetSelected() *MenuItem {
-	if m.Menu.Selected == -1 {
-		return nil
-	}
-	return &m.Menu.Items[m.Menu.Selected]
-}
-
 func (m *PlezkModel) GetModel() (tea.Model, error) {
-	if m.Menu.Selected == -1 {
-		return nil, errors.New("No model selected")
-	}
 	if !m.HasModel() {
 		return nil, errors.New("Model does not exist")
 	}
-	model := m.Menu.Items[m.Menu.Selected].model
-	return m.Models[model], nil
+	return m.Models[m.SelectedModel], nil
 }
 
 func (m *PlezkModel) HasModel() bool {
-	selected := m.Menu.Selected
-	if selected == -1 {
-		return false
-	}
-
-	_, ok := m.Models[m.Menu.Items[selected].model]
+	_, ok := m.Models[m.SelectedModel]
 	return ok
 }
 
@@ -56,6 +42,9 @@ func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "ctrl+c", "q":
 			return m, tea.Quit
 		}
+	case websites.DomainSelectMsg:
+		m.Menu.Focused = false
+		m.SelectedModel = "website"
 	}
 
 	if !m.Menu.Focused && !m.HasModel() {
@@ -69,9 +58,7 @@ func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, cmd
 	} else if m.HasModel() {
 		var cmd tea.Cmd
-		model := m.Models[m.Menu.Items[m.Menu.Selected].model]
-		model, cmd = model.Update(msg)
-		m.Models[m.Menu.Items[m.Menu.Selected].model] = model
+		m.Models[m.SelectedModel], cmd = m.Models[m.SelectedModel].Update(msg)
 		return m, cmd
 	}
 
@@ -132,6 +119,7 @@ func main() {
 				Width:  w,
 				Height: h,
 			},
+			"website": &websitedetails.WebsiteDetailsModel{},
 		},
 	}, tea.WithAltScreen())
 	if err := p.Start(); err != nil {

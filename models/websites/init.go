@@ -59,6 +59,16 @@ func (m *DomainsAndWebsitesModel) GetSelectedDomain() *domain.Domain {
 	return nil
 }
 
+func DomainSelect(domain domain.Domain) tea.Cmd {
+	return func() tea.Msg {
+		return DomainSelectMsg{domain}
+	}
+}
+
+type DomainSelectMsg struct {
+	Domain domain.Domain
+}
+
 func (m *DomainsAndWebsitesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmds []tea.Cmd
 	if !m.focused && m.DomainModel != nil {
@@ -90,10 +100,8 @@ func (m *DomainsAndWebsitesModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case "enter", "right":
 			m.SelectedDomain = m.cursor
-			m.DomainModel = &website.WebsiteModel{
-				Domain: *m.GetSelectedDomain(),
-			}
-			m.DomainModel.Init()
+			m.focused = false
+			return m, DomainSelect(*m.GetSelectedDomain())
 		case "esc", "left":
 			return m, Back
 		}
