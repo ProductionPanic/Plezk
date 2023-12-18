@@ -1,101 +1,96 @@
 package main
 
 import (
+	"errors"
 	tea "github.com/charmbracelet/bubbletea"
-	lg "github.com/charmbracelet/lipgloss"
-	"plezk/lib/colors"
 )
 
-type PleskMenu struct {
-	Items         []PleskMenuItem
-	CursorIndex   int
-	SelectedIndex int
-	MenuFocused   bool
-	width         int
-	height        int
+type Menu struct {
+	Items    []MenuItem
+	Cursor   int
+	Selected int
+	Focused  bool
 }
 
-func (m PleskMenu) Init() tea.Cmd {
+type MenuItem struct {
+	Name  string
+	Type  int
+	model string
+}
+
+func (m *Menu) Init() tea.Cmd {
+	m.Cursor = 0
+	m.Selected = -1
+	m.Focused = true
 	return nil
 }
 
-func (m PleskMenu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.MenuFocused {
-		switch msg := msg.(type) {
-		case tea.KeyMsg:
-			switch msg.String() {
-			case "up", "k":
-				if m.CursorIndex > 0 {
-					m.CursorIndex--
-				}
-			case "down", "j":
-				if m.CursorIndex < len(m.Items)-1 {
-					m.CursorIndex++
-				}
-			case "enter":
-				m.SelectedIndex = m.CursorIndex
-				m.MenuFocused = false
-				return m, nil
-			}
+func (m *Menu) TotalLength() int {
+	return len(m.Items)
+}
+
+func (m *Menu) GetSelected() *MenuItem {
+	if m.Selected == -1 {
+		return nil
+	}
+	return &m.Items[m.Selected]
+}
+
+func (m *Menu) GetModel() (string, error) {
+	if m.Selected == -1 {
+		return "", errors.New("No model selected")
+	}
+	return m.Items[m.Selected].model, nil
+}
+
+func (m *Menu) Up() {
+	if m.Cursor > 0 {
+		m.Cursor--
+	}
+}
+
+func (m *Menu) Down() {
+	if m.Cursor < m.TotalLength()-1 {
+		m.Cursor++
+	}
+}
+
+func (m *Menu) Select() {
+	m.Selected = m.Cursor
+	m.Focused = false
+}
+
+func (m *Menu) Unselect() {
+	m.Selected = -1
+	m.Focused = true
+}
+
+func (m *Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch msg.String() {
+		case "up":
+			m.Up()
+		case "down":
+			m.Down()
+		case "enter":
+			m.Select()
+		case "esc":
+			m.Unselect()
 		}
 	}
-
 	return m, nil
 }
 
-func (m PleskMenu) View() string {
+func (m Menu) View() string {
 	s := ""
-	menuItemStyle := lg.NewStyle().
-		Foreground(colors.Primary).
-		Background(colors.Black).
-		Width(m.width-2).Padding(0, 1)
-	activeMenuItemStyle := menuItemStyle.Copy().
-		Foreground(colors.PrimaryText).
-		Background(colors.Primary)
-	s_ := lg.NewStyle().
-		Foreground(colors.PrimaryText).
-		Background(colors.Black).
-		Width(m.width).
-		Align(lg.Center).
-		MarginTop(1).
-		Bold(true)
-
-	s += s_.Render("Plesk")
-	s += s_.Bold(false).Faint(true).Render("A plesk helper cli")
-	s += "\n\n"
-
 	for i, item := range m.Items {
-		if i > 0 {
-			s += "\n"
-		}
-		style := menuItemStyle.Copy()
-		if m.SelectedIndex == i {
-			style = activeMenuItemStyle.Copy()
-		}
-		if i == m.CursorIndex && m.MenuFocused {
-			style = style.Copy().Border(lg.InnerHalfBlockBorder()).BorderRight(false).BorderTop(false).BorderBottom(false).BorderForeground(lg.Color("#fff"))
+		if i == m.Cursor {
+			s += "> "
 		} else {
-			style = style.Copy().Border(lg.InnerHalfBlockBorder()).BorderRight(false).BorderTop(false).BorderBottom(false).BorderForeground(lg.Color("#000"))
+			s += "  "
 		}
-
-		s += style.
-			Render(item.Label)
+		s += item.Name + "\n"
 	}
-
-	return lg.NewStyle().
-		Height(m.height).
-		Background(colors.Black).
-		Border(lg.BlockBorder()).
-		BorderRight(true).BorderLeft(false).BorderTop(false).BorderBottom(false).
-		BorderForeground(colors.Primary).
-		Width(m.width).Render(
-		lg.Place(m.width, m.height, lg.Center, lg.Top, s))
-}
-
-type PleskMenuItem struct {
-	Label             string
-	PleskMenuItemType int // MenuItemTypes.*
-	model             tea.Model
-	function          func()
-	command           tea.Cmd
+	return s
 }

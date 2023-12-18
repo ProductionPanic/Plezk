@@ -1,172 +1,140 @@
 package main
 
 import (
-	"plezk/enum/MenuItemTypes"
-	"plezk/lib/colors"
-	"plezk/lib/common"
-	"plezk/models/websites"
-
+	"errors"
 	tea "github.com/charmbracelet/bubbletea"
-
 	lg "github.com/charmbracelet/lipgloss"
+	"golang.org/x/term"
+	"plezk/models/websites"
 )
 
-type PleskModel struct {
-	Menu   PleskMenu
-	width  int
-	height int
+type PlezkModel struct {
+	Menu   *Menu
+	Models map[string]tea.Model
 }
 
-func (m PleskModel) Init() tea.Cmd {
-	for i, item := range m.Menu.Items {
-		if item.PleskMenuItemType == MenuItemTypes.ModelType {
-			m.Menu.Items[i].model.Init()
-			m.Menu.Items[i].model.Update(nil)
-		}
-	}
+func (m *PlezkModel) Init() tea.Cmd {
 	return nil
 }
-func (m *PleskModel) HasCurrentModel() bool {
-	return m.Menu.Items[m.Menu.SelectedIndex].model != nil
+
+func (m *PlezkModel) TotalLength() int {
+	return len(m.Menu.Items)
 }
 
-func (m *PleskModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+func (m *PlezkModel) GetSelected() *MenuItem {
+	if m.Menu.Selected == -1 {
+		return nil
+	}
+	return &m.Menu.Items[m.Menu.Selected]
+}
 
-	var cmds []tea.Cmd
+func (m *PlezkModel) GetModel() (tea.Model, error) {
+	if m.Menu.Selected == -1 {
+		return nil, errors.New("No model selected")
+	}
+	if !m.HasModel() {
+		return nil, errors.New("Model does not exist")
+	}
+	model := m.Menu.Items[m.Menu.Selected].model
+	return m.Models[model], nil
+}
 
-	if m.HasCurrentModel() && !m.Menu.MenuFocused {
-		cur_model, cur_cmd := m.Menu.Items[m.Menu.SelectedIndex].model.Update(msg)
-		m.Menu.Items[m.Menu.SelectedIndex].model = cur_model
-		if cur_cmd != nil {
-			cmds = append(cmds, cur_cmd)
-		}
+func (m *PlezkModel) HasModel() bool {
+	selected := m.Menu.Selected
+	if selected == -1 {
+		return false
 	}
 
-	m_menu, m_cmd := m.Menu.Update(msg)
-	m.Menu = m_menu.(PleskMenu)
-	if m_cmd != nil {
-		cmds = append(cmds, m_cmd)
-	}
+	_, ok := m.Models[m.Menu.Items[selected].model]
+	return ok
+}
 
+func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case "esc":
 		}
-	case common.BackMsg:
-		m.Menu.MenuFocused = true
+	}
+
+	if !m.Menu.Focused && !m.HasModel() {
+		m.Menu.Focused = true
 		return m, nil
 	}
-	return m, tea.Batch(cmds...)
-}
 
-func (m *PleskModel) UpdateModel(msg tea.Msg) (tea.Model, tea.Cmd) {
-	if m.HasCurrentModel() && !m.Menu.MenuFocused {
-		updatedModel, cmd := m.Menu.Items[m.Menu.SelectedIndex].model.Update(msg)
-		m.Menu.Items[m.Menu.SelectedIndex].model = updatedModel
+	if m.Menu.Focused {
+		menum, cmd := m.Menu.Update(msg)
+		m.Menu = menum.(*Menu)
+		return m, cmd
+	} else if m.HasModel() {
+		var cmd tea.Cmd
+		model := m.Models[m.Menu.Items[m.Menu.Selected].model]
+		model, cmd = model.Update(msg)
+		m.Models[m.Menu.Items[m.Menu.Selected].model] = model
 		return m, cmd
 	}
+
 	return m, nil
 }
 
-func (m *PleskModel) ViewContent() string {
-	var modelOutput string
-	if m.Menu.Items[m.Menu.SelectedIndex].PleskMenuItemType == MenuItemTypes.ModelType {
-		modelOutput = m.Menu.Items[m.Menu.SelectedIndex].model.View()
+func (m *PlezkModel) View() string {
+	w, h, _ := term.GetSize(0)
+	w -= 4
+	h -= 2
+	menu := lg.NewStyle().
+		Width(w/6).
+		Height(h).
+		Background(lg.Color("#000000")).
+		Foreground(lg.Color("#ffffff")).
+		Padding(1, 2).
+		Border(lg.OuterHalfBlockBorder()).
+		BorderForeground(lg.Color("#9933ff")).
+		BorderBackground(lg.Color("#000000")).Render(m.Menu.View())
+	content_str := ""
+	if m.HasModel() {
+		content_str_model, _ := m.GetModel()
+		content_str = content_str_model.View()
 	}
-	return lg.NewStyle().Width(m.width / 6 * 5).Background(colors.Black).MaxHeight(m.height - 1).Height(m.height - 1).Render(modelOutput)
-}
+	content := lg.NewStyle().
+		Width(w-w/6).
+		Height(h).
+		Background(lg.Color("#000000")).
+		Foreground(lg.Color("#000000")).
+		Padding(1, 2).
+		Border(lg.OuterHalfBlockBorder()).
+		BorderForeground(lg.Color("#9933ff")).
+		BorderBackground(lg.Color("#000000")).Render(content_str)
 
-func (m *PleskModel) View() string {
-	w, h := GetTermSize()
-	menu := m.Menu.View()
-	content := m.ViewContent()
-	app := lg.NewStyle().
-		Border(lg.InnerHalfBlockBorder()).
-		BorderForeground(colors.Primary).
-		Render(lg.JoinHorizontal(
-			lg.Top,
-			menu,
-			content,
-		))
-
-	return lg.Place(w, h, lg.Center, lg.Center, app)
-}
-
-type PlaceHolderModel struct {
-	title  string
-	width  int
-	height int
-}
-
-func (m PlaceHolderModel) Init() tea.Cmd {
-	return nil
-}
-func (m *PlaceHolderModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	return m, nil
-}
-func (m *PlaceHolderModel) View() string {
-	return lg.NewStyle().Foreground(colors.Accent).Render(m.title)
+	return lg.NewStyle().Render(lg.JoinHorizontal(lg.Top, menu, content))
 }
 
 func main() {
-	program := tea.NewProgram(initialModel(), tea.WithAltScreen())
-	_, err := program.Run()
-	if err != nil {
-		panic(err)
-	}
-}
-
-func initialModel() tea.Model {
-	w, h := GetTermSize()
-	w -= 10
-	h -= 5
-	return &PleskModel{
-		Menu: PleskMenu{
-			SelectedIndex: 0,
-			Items: []PleskMenuItem{
-				{
-					Label:             "Websites & domains",
-					PleskMenuItemType: MenuItemTypes.ModelType,
-					model: &websites.DomainsAndWebsitesModel{
-						Width:          w / 6 * 5,
-						Height:         h,
-						SelectedDomain: -1,
-					},
+	w, h, _ := term.GetSize(0)
+	p := tea.NewProgram(&PlezkModel{
+		Menu: &Menu{
+			Items: []MenuItem{
+				MenuItem{
+					Name:  "Websites",
+					Type:  0,
+					model: "websites",
 				},
-				{
-					Label:             "Files",
-					PleskMenuItemType: MenuItemTypes.ModelType,
-					model:             &PlaceHolderModel{width: w / 6 * 5, height: h, title: "Files"},
-				},
-				{
-					Label:             "Databases",
-					PleskMenuItemType: MenuItemTypes.ModelType,
-					model:             &PlaceHolderModel{width: w / 6 * 5, height: h, title: "Databases"},
-				},
-				{
-					Label:             "Mail",
-					PleskMenuItemType: MenuItemTypes.ModelType,
-					model:             &PlaceHolderModel{width: w / 6 * 5, height: h, title: "Mail"},
-				},
-				{
-					Label:             "Tools & Settings",
-					PleskMenuItemType: MenuItemTypes.ModelType,
-					model:             &PlaceHolderModel{width: w / 6 * 5, height: h, title: "Tools & Settings"},
-				},
-				{
-					Label:             "Exit",
-					PleskMenuItemType: MenuItemTypes.CommandType,
-					command:           tea.Quit,
+				MenuItem{
+					Name:  "Settings",
+					Type:  0,
+					model: "settings",
 				},
 			},
-			MenuFocused: true,
-			width:       w / 6,
-			height:      h,
+			Focused: true,
 		},
-		width:  w,
-		height: h,
+		Models: map[string]tea.Model{
+			"websites": &websites.DomainsAndWebsitesModel{
+				Width:  w,
+				Height: h,
+			},
+		},
+	}, tea.WithAltScreen())
+	if err := p.Start(); err != nil {
+		panic(err)
 	}
 }
