@@ -51,21 +51,21 @@ func (m *PlezkModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 	if !m.Menu.Focused && !m.HasModel() {
 		m.Menu.Focused = true
-	}
-	var cmds []tea.Cmd
-
-	if m.Menu.Focused {
-		menum, cmd := m.Menu.Update(msg)
-		m.Menu = menum.(*Menu)
-		cmds = append(cmds, cmd)
+		return m, nil
 	}
 	if m.HasModel() {
 		var cmd tea.Cmd
 		m.Models[m.SelectedModel], cmd = m.Models[m.SelectedModel].Update(msg)
-		cmds = append(cmds, cmd)
+		return m, cmd
 	}
 
-	return m, tea.Batch(cmds...)
+	if m.Menu.Focused {
+		menum, cmd := m.Menu.Update(msg)
+		m.Menu = menum.(*Menu)
+		return m, cmd
+	}
+
+	return m, nil
 }
 
 func (m *PlezkModel) View() string {
