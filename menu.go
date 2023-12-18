@@ -84,15 +84,15 @@ func (m *Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m Menu) View() string {
-	s := ""
-	s += lg.NewStyle().Bold(true).Foreground(lg.Color("#FF00FF")).Render("Plezk\n")
+	s := []string{}
+	s = append(s, lg.NewStyle().Bold(true).Foreground(lg.Color("#FF00FF")).Render("Plezk\n"))
 	for i, item := range m.Items {
 		if i == m.Cursor {
-			s += "> "
+			s = append(s, "> ")
 		} else {
-			s += "  "
+			s = append(s, "  ")
 		}
-		s += item.Name + "\n"
+		s[len(s)-1] += item.Name + "\n"
 	}
-	return s
+	return lg.JoinVertical(lg.Left, s...)
 }
