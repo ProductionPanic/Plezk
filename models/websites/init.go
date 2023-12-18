@@ -130,7 +130,7 @@ func (m DomainsAndWebsitesModel) View() string {
 				totali++
 				continue
 			}
-			domains = append(domains, domainStyle.Copy().MarginLeft(1).Render(child.Name))
+			domains = append(domains, domainStyle.Copy().MarginLeft(1).Render(" - "+child.Name))
 			totali++
 		}
 	}
