@@ -1,6 +1,7 @@
 package websites
 
 import (
+	"fmt"
 	tea "github.com/charmbracelet/bubbletea"
 	lg "github.com/charmbracelet/lipgloss"
 	"plezk/lib/colors"
@@ -17,6 +18,12 @@ type DomainsAndWebsitesModel struct {
 	focused        bool
 	DomainModel    tea.Model
 }
+
+const (
+	treePipe  = "│"
+	treeTPipe = "├"
+	treeLPipe = "└"
+)
 
 func (m DomainsAndWebsitesModel) Init() tea.Cmd {
 	m.domains = domain.List()
@@ -123,13 +130,17 @@ func (m DomainsAndWebsitesModel) View() string {
 		}
 		totali++
 		domains = append(domains, domstyle.Render(dom.Name))
-		for _, child := range dom.Children {
+		for ci, child := range dom.Children {
+			pipechar := fmt.Sprintf(" %s ", treeTPipe)
+			if ci == len(dom.Children)-1 {
+				pipechar = fmt.Sprintf(" %s ", treeLPipe)
+			}
 			if totali == m.cursor {
-				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).MarginLeft(1).Render(" - "+child.Name))
+				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).PaddingLeft(1).Render(pipechar+child.Name))
 				totali++
 				continue
 			}
-			domains = append(domains, domainStyle.Copy().MarginLeft(1).Render(" - "+child.Name))
+			domains = append(domains, domainStyle.Copy().PaddingLeft(1).Render(pipechar+child.Name))
 			totali++
 		}
 	}
@@ -142,6 +153,8 @@ func (m DomainsAndWebsitesModel) View() string {
 	headr := lg.NewStyle().
 		Bold(true).
 		Foreground(colors.Secondary).
+		BorderForeground(colors.Black).
+		Width(m.Width).
 		Render("Websites and domains")
 	return rootStyle.Render(lg.JoinVertical(lg.Left, headr, dom))
 }

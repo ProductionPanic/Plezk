@@ -30,8 +30,8 @@ func (m *WebsiteDetailsModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m *WebsiteDetailsModel) View() string {
-	info := lg.NewStyle().Width(m.Width/2-2).Background(colors.Black).Height(m.Height).Border(lg.BlockBorder(), false, false, false, true).BorderForeground(colors.Primary).BorderBackground(colors.Black).Render(
-		lg.Place(m.Width/2-2, m.Height-2, lg.Center, lg.Center, lg.NewStyle().Align(lg.Left).Render(m.Domain.Info().GetInfoString())),
+	info := lg.NewStyle().Width(m.Width/2-2).Background(colors.Black).Height(m.Height).Padding(1).Border(lg.BlockBorder(), false, false, false, true).BorderForeground(colors.Primary).BorderBackground(colors.Black).Render(
+		m.Domain.Info().GetInfoString(),
 	)
 	var actions []string
 	// title
