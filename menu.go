@@ -3,6 +3,7 @@ package main
 import (
 	"errors"
 	tea "github.com/charmbracelet/bubbletea"
+	lg "github.com/charmbracelet/lipgloss"
 )
 
 type Menu struct {
@@ -84,6 +85,7 @@ func (m *Menu) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 func (m Menu) View() string {
 	s := ""
+	s += lg.NewStyle().Bold(true).Foreground(lg.Color("#FF00FF")).Render("Plezk\n")
 	for i, item := range m.Items {
 		if i == m.Cursor {
 			s += "> "
