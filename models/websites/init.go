@@ -126,7 +126,7 @@ func (m DomainsAndWebsitesModel) View() string {
 		domains = append(domains, domstyle.Render(dom.Name))
 		for _, child := range dom.Children {
 			if totali == m.cursor {
-				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).MarginLeft(1).Render(child.Name))
+				domains = append(domains, domainStyle.Copy().BorderForeground(colors.Secondary).MarginLeft(1).Render(" > "+child.Name))
 				totali++
 				continue
 			}
@@ -144,7 +144,6 @@ func (m DomainsAndWebsitesModel) View() string {
 		Bold(true).
 		Foreground(colors.Secondary).
 		Background(colors.Black).
-		Margin(1).
 		Render("Websites and domains")
 	return rootStyle.Render(lg.JoinVertical(lg.Left, headr, dom))
 }
